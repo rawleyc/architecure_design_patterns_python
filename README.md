@@ -88,10 +88,10 @@ The sample sessions in `data/logs.json` are dated around 10 October 2026. A shor
 
 Use Python 3.9 or newer. Run these commands from the project root. The JSON paths are relative to that directory.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 python app.py
 ```
 
@@ -101,7 +101,7 @@ In Cursor or VS Code, saving a Python file formats it and applies Ruff fixes. Th
 
 From the activated virtual environment you can run the same checks by hand:
 
-```bash
+```powershell
 ruff check .
 ruff format .
 ```
@@ -110,83 +110,79 @@ ruff format .
 
 Save a profile:
 
-```bash
-curl -X POST 'http://127.0.0.1:5000/user?age=28&gender=male&weight_kg=80&height_cm=178&goal=maintain'
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:5000/user?age=28&gender=male&weight_kg=80&height_cm=178&goal=maintain"
 ```
 
 List activities:
 
-```bash
-curl http://127.0.0.1:5000/activities
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/activities"
 ```
 
 Add an activity:
 
-```bash
-curl -X POST http://127.0.0.1:5000/activities \
-  -H 'Content-Type: application/json' \
-  -d '{"name": "boxing", "calories_per_60_min": 540}'
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:5000/activities" -ContentType "application/json" -Body '{"name":"boxing","calories_per_60_min":540}'
 ```
 
 Log a session:
 
-```bash
-curl -X POST http://127.0.0.1:5000/log \
-  -H 'Content-Type: application/json' \
-  -d '{"type": "running", "minutes": 30}'
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:5000/log" -ContentType "application/json" -Body '{"type":"running","minutes":30}'
 ```
 
 Read notices:
 
-```bash
-curl http://127.0.0.1:5000/notices
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/notices"
 ```
 
 Undo the last log:
 
-```bash
-curl -X POST http://127.0.0.1:5000/log/undo
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:5000/log/undo"
 ```
 
 Calories burned in the last day, week, or month:
 
-```bash
-curl 'http://127.0.0.1:5000/calories?period=day'
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/calories?period=day"
 ```
 
-```bash
-curl 'http://127.0.0.1:5000/calories?period=week'
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/calories?period=week"
 ```
 
-```bash
-curl 'http://127.0.0.1:5000/calories?period=month'
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/calories?period=month"
 ```
 
 Daily diet targets for the same periods. A profile must already be saved.
 
-```bash
-curl 'http://127.0.0.1:5000/targets?period=day'
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/targets?period=day"
 ```
 
-```bash
-curl 'http://127.0.0.1:5000/targets?period=week'
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/targets?period=week"
 ```
 
-```bash
-curl 'http://127.0.0.1:5000/targets?period=month'
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/targets?period=month"
 ```
 
 Request counter:
 
-```bash
-curl http://127.0.0.1:5000/stats
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/stats"
 ```
 
 ## Test
 
 The end-to-end test calls every endpoint, including invalid input, calorie windows, notices, undo, and diet targets from the live macros service. It restores the sample JSON files afterward.
 
-```bash
-source .venv/bin/activate
+```powershell
+.\.venv\Scripts\Activate.ps1
 python -m unittest test_e2e.py -v
 ```
