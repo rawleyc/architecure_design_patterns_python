@@ -18,5 +18,10 @@
     "type": "yoga",
     "minutes": 50,
     "logged_at": "2026-08-20T10:00:00"
+  },
+  {
+    "type": "running",
+    "minutes": 30,
+    "logged_at": "2026-10-14T18:41:11"
   }
 ]
