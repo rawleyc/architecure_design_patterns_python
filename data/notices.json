@@ -1,15 +1,1 @@
-[
-  {
-    "event": "activity_logged",
-    "type": "running",
-    "minutes": 30,
-    "calories": 300,
-    "at": "2026-10-14T18:41:11"
-  },
-  {
-    "event": "weekly_goal_reached",
-    "calories": 787,
-    "goal": 500,
-    "at": "2026-10-14T18:41:11"
-  }
-]
+[]

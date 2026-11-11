@@ -56,14 +56,15 @@ graph TB
     getCal -->|reads| logs3[logs.json]
     getCal -->|reads| a4[activities.json]
     postUser -->|writes| user1[user.json]
-    stats -->|reads| requests[REQUESTS]
+    stats -->|reads| requests[Requests singleton]
     targets -->|reads| user2[user.json]
     targets -->|reads| logs4[logs.json]
     targets -->|reads| a5[activities.json]
     targets --> bands[LIFESTYLE_ACTIVITY]
     bands --> names[ACTIVITY_FOR_API]
     names -->|calls| macros[Macros API]
-    Handlers -->|each call updates| requests
+    Handlers -->|decorated by| requestLog[request_log]
+    requestLog -->|updates| requests
 ```
 
 ## What it does
@@ -72,7 +73,7 @@ Ten activities in `data/activities.json` each have calories burned per 60 minute
 
 `data/user.json` holds one profile: age, gender, weight, height, and a goal of `lose`, `maintain`, or `gain`. Saving again replaces that profile.
 
-`GET /targets` sums the calories burned in the requested period and scales that total to a week (a day is multiplied by 7, a month by 7/30). It compares the weekly total with `LIFESTYLE_ACTIVITY` in `app.py` and picks the highest lifestyle whose minimum the user has reached. That level is sent to the public macros calculator, which returns daily calories, protein, carbohydrates, and fat.
+Every route is wrapped by `request_log`, which records the request count, path, and duration in the `Requests` singleton. `GET /targets` sums the calories burned in the requested period and scales that total to a week (a day is multiplied by 7, a month by 7/30). It compares the weekly total with `LIFESTYLE_ACTIVITY` in `app.py` and picks the highest lifestyle whose minimum the user has reached. That level is sent to the public macros calculator, which returns daily calories, protein, carbohydrates, and fat.
 
 | Lifestyle in this app | Value sent to the calculator |
 |---|---|
