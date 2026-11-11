@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 
 from flask import Flask, jsonify, request
 
+from decorators.request_log import request_log
+from singletons.requests import Requests
+
 app = Flask(__name__)
 
 # Weekly calories burned while keeping the same body weight, adults age 19+.
@@ -44,19 +47,11 @@ ACTIVITY_FOR_API = {
     "very active": "extra_active",
 }
 
-REQUESTS = {"count": 0, "last_path": None, "last_seconds": None}
-
 
 @app.route("/log", methods=["POST"])
+@request_log
 def log_activity():
-    started = datetime.now()
-    REQUESTS["count"] = REQUESTS["count"] + 1
-    REQUESTS["last_path"] = request.path
-    try:
-        return _log_activity()
-    finally:
-        REQUESTS["last_seconds"] = (datetime.now() - started).total_seconds()
-        print("request", REQUESTS["count"], request.path, REQUESTS["last_seconds"])
+    return _log_activity()
 
 
 def _log_activity():
@@ -181,99 +176,70 @@ def _log_activity():
 
 
 @app.route("/log/undo", methods=["POST"])
+@request_log
 def undo_log():
-    started = datetime.now()
-    REQUESTS["count"] = REQUESTS["count"] + 1
-    REQUESTS["last_path"] = request.path
+    print("undo last log")
     try:
-        print("undo last log")
-        try:
-            logs_file = open("data/logs.json", "r")
-            logs = json.loads(logs_file.read())
-            logs_file.close()
-        except Exception as err:
-            print("could not read logs", err)
-            logs = []
+        logs_file = open("data/logs.json", "r")
+        logs = json.loads(logs_file.read())
+        logs_file.close()
+    except Exception as err:
+        print("could not read logs", err)
+        logs = []
 
-        if len(logs) == 0:
-            return jsonify({"error": "nothing to undo"}), 400
+    if len(logs) == 0:
+        return jsonify({"error": "nothing to undo"}), 400
 
-        removed = logs.pop()
-        out = open("data/logs.json", "w")
-        out.write(json.dumps(logs, indent=2))
-        out.close()
-        print("undid", removed)
-        return jsonify(removed), 200
-    finally:
-        REQUESTS["last_seconds"] = (datetime.now() - started).total_seconds()
-        print("request", REQUESTS["count"], request.path, REQUESTS["last_seconds"])
+    removed = logs.pop()
+    out = open("data/logs.json", "w")
+    out.write(json.dumps(logs, indent=2))
+    out.close()
+    print("undid", removed)
+    return jsonify(removed), 200
 
 
 @app.route("/notices", methods=["GET"])
+@request_log
 def list_notices():
-    started = datetime.now()
-    REQUESTS["count"] = REQUESTS["count"] + 1
-    REQUESTS["last_path"] = request.path
+    print("got a notices request")
     try:
-        print("got a notices request")
-        try:
-            notices_file = open("data/notices.json", "r")
-            notices = json.loads(notices_file.read())
-            notices_file.close()
-        except Exception as err:
-            print("could not read notices", err)
-            notices = []
-        return jsonify(notices)
-    finally:
-        REQUESTS["last_seconds"] = (datetime.now() - started).total_seconds()
-        print("request", REQUESTS["count"], request.path, REQUESTS["last_seconds"])
+        notices_file = open("data/notices.json", "r")
+        notices = json.loads(notices_file.read())
+        notices_file.close()
+    except Exception as err:
+        print("could not read notices", err)
+        notices = []
+    return jsonify(notices)
 
 
 @app.route("/stats", methods=["GET"])
+@request_log
 def stats():
-    started = datetime.now()
-    REQUESTS["count"] = REQUESTS["count"] + 1
-    REQUESTS["last_path"] = request.path
-    try:
-        print("got a stats request")
-        return jsonify(
-            {
-                "count": REQUESTS["count"],
-                "last_path": REQUESTS["last_path"],
-                "last_seconds": REQUESTS["last_seconds"],
-            }
-        )
-    finally:
-        REQUESTS["last_seconds"] = (datetime.now() - started).total_seconds()
-        print("request", REQUESTS["count"], request.path, REQUESTS["last_seconds"])
+    stats = Requests.get_instance()
+    print("got a stats request")
+    return jsonify(
+        {
+            "count": stats.count,
+            "last_path": stats.last_path,
+            "last_seconds": stats.last_seconds,
+        }
+    )
 
 
 @app.route("/activities", methods=["GET"])
+@request_log
 def list_activities():
-    started = datetime.now()
-    REQUESTS["count"] = REQUESTS["count"] + 1
-    REQUESTS["last_path"] = request.path
-    try:
-        print("got an activities list request")
-        activities_file = open("data/activities.json", "r")
-        activities = json.loads(activities_file.read())
-        activities_file.close()
-        return jsonify(activities)
-    finally:
-        REQUESTS["last_seconds"] = (datetime.now() - started).total_seconds()
-        print("request", REQUESTS["count"], request.path, REQUESTS["last_seconds"])
+    print("got an activities list request")
+    activities_file = open("data/activities.json", "r")
+    activities = json.loads(activities_file.read())
+    activities_file.close()
+    return jsonify(activities)
 
 
 @app.route("/activities", methods=["POST"])
+@request_log
 def add_activity():
-    started = datetime.now()
-    REQUESTS["count"] = REQUESTS["count"] + 1
-    REQUESTS["last_path"] = request.path
-    try:
-        return _add_activity()
-    finally:
-        REQUESTS["last_seconds"] = (datetime.now() - started).total_seconds()
-        print("request", REQUESTS["count"], request.path, REQUESTS["last_seconds"])
+    return _add_activity()
 
 
 def _add_activity():
@@ -323,15 +289,9 @@ def _add_activity():
 
 
 @app.route("/calories", methods=["GET"])
+@request_log
 def calories():
-    started = datetime.now()
-    REQUESTS["count"] = REQUESTS["count"] + 1
-    REQUESTS["last_path"] = request.path
-    try:
-        return _calories()
-    finally:
-        REQUESTS["last_seconds"] = (datetime.now() - started).total_seconds()
-        print("request", REQUESTS["count"], request.path, REQUESTS["last_seconds"])
+    return _calories()
 
 
 def _calories():
@@ -401,15 +361,9 @@ def _calories():
 
 
 @app.route("/user", methods=["POST"])
+@request_log
 def save_user():
-    started = datetime.now()
-    REQUESTS["count"] = REQUESTS["count"] + 1
-    REQUESTS["last_path"] = request.path
-    try:
-        return _save_user()
-    finally:
-        REQUESTS["last_seconds"] = (datetime.now() - started).total_seconds()
-        print("request", REQUESTS["count"], request.path, REQUESTS["last_seconds"])
+    return _save_user()
 
 
 def _save_user():
@@ -475,15 +429,9 @@ def _save_user():
 
 
 @app.route("/targets", methods=["GET"])
+@request_log
 def daily_targets():
-    started = datetime.now()
-    REQUESTS["count"] = REQUESTS["count"] + 1
-    REQUESTS["last_path"] = request.path
-    try:
-        return _daily_targets()
-    finally:
-        REQUESTS["last_seconds"] = (datetime.now() - started).total_seconds()
-        print("request", REQUESTS["count"], request.path, REQUESTS["last_seconds"])
+    return _daily_targets()
 
 
 def _daily_targets():
